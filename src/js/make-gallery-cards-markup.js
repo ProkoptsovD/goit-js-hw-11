@@ -2,7 +2,7 @@ function makeGalleryCardsMarkup(images) {
   return images.map(
     ({ webformatURL, largeImageURL, metaData: { views, downloads, likes, tags, comments } }) => {
       return `
-            <li>
+            <li class="post">
               <a class="gallery__item" href="${largeImageURL}">
                 <div class="photo-card">
                   <img class="gallery__image" src="${webformatURL}" alt="${tags}" loading="lazy" />

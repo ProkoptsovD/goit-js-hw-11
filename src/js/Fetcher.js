@@ -3,15 +3,16 @@ import axios from 'axios';
 export default class Fetcher {
   #API_CONFIG;
   #SEARCH_CONFIG;
+  #url;
+  #totalFound;
 
-  constructor(apiConfig = {}, searchConfig = {}) {
+  constructor(searchConfig = {}, apiConfig = {}) {
     this.#API_CONFIG = {
       authToken: '26833467-1cbfd866f0eba1c472f46f3e4',
       baseUrl: 'https://pixabay.com/api/',
     };
     this.#SEARCH_CONFIG = {
-      page: '1',
-      per_page: 10,
+      per_page: '20',
       order: 'popular',
       editors_choice: false,
       category: 'all',
@@ -19,6 +20,9 @@ export default class Fetcher {
       image_type: 'photo',
       safesearch: true,
     };
+
+    this.#url = null;
+    this.#totalFound = 0;
     this.#setApiConfig(apiConfig);
     this.setSearchConfig(searchConfig);
   }
@@ -38,6 +42,16 @@ export default class Fetcher {
     }
   }
 
+  pagination(hits) {
+    const numberOfPages = Math.ceil(+hits / +this.#SEARCH_CONFIG.per_page);
+    const pages = [];
+    for (let i = 1; i <= numberOfPages; i += 1) {
+      pages.push(this.#url + '$page=' + i);
+    }
+
+    return pages;
+  }
+
   #makeURL(query) {
     const { authToken, baseUrl } = this.#API_CONFIG;
     const searchParams = Object.keys(this.#SEARCH_CONFIG).map(
@@ -48,6 +62,8 @@ export default class Fetcher {
     const url = `${baseUrl}?key=${authToken}${
       sanitizedQuery ? '&q=' + sanitizedQuery : ''
     }${searchParams}`;
+
+    this.#url = url;
 
     return url;
   }

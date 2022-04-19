@@ -1,17 +1,21 @@
 import { Notify } from 'notiflix';
 
-const alertMessages = {
+const messages = {
   error: 'Sorry, there are no images matching your search query. Please try again',
-  success: 'All is good',
+  success: 'Searching has started',
+  end: "We're sorry, but you've reached the end of search results.",
 };
 
-function alertMessage(messageType, messages = alertMessages) {
+function alertMessage(messageType, message = messages) {
   switch (messageType) {
     case 'error':
-      Notify.failure(messages.error);
+      Notify.failure(message.error);
       break;
     case 'success':
-      Notify.success(messages.success);
+      Notify.success(message.success);
+      break;
+    case 'end':
+      Notify.info(message.end);
       break;
   }
 }
