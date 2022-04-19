@@ -28,63 +28,40 @@ async function onFormSubmitFetchAndRenderImages(e) {
 
   const searchQuery = e.target[0].value.toLowerCase().trim();
 
-  const rawImagesData = await pixabay.find(searchQuery);
-  const parsedImagesData = await rawImagesData.data.hits;
+  const response = await pixabay.find(searchQuery);
+  const data = await parseData(response);
 
-  if (!parsedImagesData.length) {
+  if (!data.length) {
     alertMessage('error');
     return;
   }
 
   clearGallery();
-
-  const readyForRenderImagesData = await Promise.all(parsedImagesData.map(extractImageData));
-  renderImages(readyForRenderImagesData);
-
-  const lightbox = new SimpleLightbox('.gallery a', simpleOptions);
+  renderImages(data);
+  renderGalleryStyles();
 
   alertMessage('success', {
-    success: `Hooray! We found ${rawImagesData.data.totalHits} images.`,
+    success: `Hooray! We found  images.`,
   });
   e.target.reset(); // form reset after submit
 
   //======================== pagination =========================//
-  const pages = pixabay.pagination(await rawImagesData.data.totalHits);
-
-  console.log(pages);
+  // const page = pixabay.paginator();
+  // const a = await page.next();
+  // const b = await a.value.data.hits;
+  // console.log(b);
 }
-// function getPosition() {
-//   const parent = refs.gallery.getBoundingClientRect();
-//   const firstChild = refs.gallery.firstElementChild.getBoundingClientRect();
-//   const lastChild = refs.gallery.lastElementChild.getBoundingClientRect();
 
-//   return { parent, firstChild, lastChild };
-// }
+async function parseData(rawData) {
+  try {
+    const parsedData = await rawData.data.hits;
+    const readyForRenderData = await Promise.all(parsedData.map(extractImageData));
 
-// async function requestPoint(paginationList) {
-//   const intervalID = setInterval(() => {
-//     const { parent, firstChild } = getPosition();
-//     const cardHeight = firstChild.height;
-//     const cardPosY = firstChild.y;
-//     const paretHeight = parent.height;
-//     const isTimeToFetch = Math.abs(cardPosY) >= paretHeight - cardHeight * 4;
-
-//     let _pageNumber = 1;
-
-//     if (isTimeToFetch) {
-//       axios.get(paginationList[_pageNumber]).then(response => {
-//         const parsedImagesData = response.data.hits;
-
-//         console.log(parsedImagesData);
-//         const readyForRenderImagesData = Promise.all(parsedImagesData.map(extractImageData));
-//         console.log(readyForRenderImagesData);
-//         renderImages(readyForRenderImagesData);
-
-//         _pageNumber += 1;
-//       });
-//     }
-//   }, 1000);
-// }
+    return readyForRenderData;
+  } catch (err) {
+    console.log(err);
+  }
+}
 
 async function extractImageData(image) {
   const { webformatURL, largeImageURL, views, downloads, likes, tags, comments } = image;
@@ -108,6 +85,10 @@ function renderImages(data) {
   const galleryCardsMarkup = makeGalleryCardsMarkup(data);
 
   refs.gallery.insertAdjacentHTML('beforeend', galleryCardsMarkup);
+}
+
+function renderGalleryStyles() {
+  const lightbox = new SimpleLightbox('.gallery a', simpleOptions);
 }
 
 function clearGallery() {

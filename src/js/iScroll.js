@@ -21,15 +21,6 @@ export default class iScroll {
       const cardPosY = firstChild.y;
       const paretHeight = parent.height;
       const isTimeToFetch = Math.abs(cardPosY) >= paretHeight - cardHeight * 4;
-
-      let _pageNumber = 1;
-
-      if (isTimeToFetch) {
-        const newPage = this.nextPage(paginationList[_pageNumber]);
-        _pageNumber += 1;
-        console.log(newPage);
-        return newPage;
-      }
     }, 400);
   }
 

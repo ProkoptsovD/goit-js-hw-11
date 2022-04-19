@@ -4,7 +4,7 @@ export default class Fetcher {
   #API_CONFIG;
   #SEARCH_CONFIG;
   #url;
-  #totalFound;
+  #pages;
 
   constructor(searchConfig = {}, apiConfig = {}) {
     this.#API_CONFIG = {
@@ -22,7 +22,7 @@ export default class Fetcher {
     };
 
     this.#url = null;
-    this.#totalFound = 0;
+    this.#pages = null;
     this.#setApiConfig(apiConfig);
     this.setSearchConfig(searchConfig);
   }
@@ -38,26 +38,40 @@ export default class Fetcher {
     try {
       const url = /^https/gi.test(userQuery) ? userQuery : this.#makeURL(userQuery);
 
-      return await axios.get(url);
+      const rawData = await axios.get(url);
+      const pagesQuantaty = await rawData.data.totalHits;
+      this.pages = pagesQuantaty;
+
+      return rawData;
     } catch (error) {
       console.log(error.stack);
     }
   }
 
-  pagination(hits) {
-    const numberOfPages = Math.ceil(+hits / +this.#SEARCH_CONFIG.per_page);
-    const pages = [];
-    for (let i = 1; i <= numberOfPages; i += 1) {
-      pages.push(this.#url + '$page=' + i);
-    }
-
-    return pages;
+  get pages() {
+    return this.#pages;
   }
 
-  nextPage(numberOfFoundImages) {
-    const pages = this.pagination(numberOfFoundImages);
+  set pages(newAmount) {
+    this.#pages = newAmount;
+  }
 
-    this.find();
+  #makePaginationURL() {
+    const numberOfPages = Math.ceil(+this.pages / +this.#SEARCH_CONFIG.per_page);
+    const pagesLinks = [];
+    for (let i = 1; i <= numberOfPages; i += 1) {
+      pagesLinks.push(this.#url + '$page=' + i);
+    }
+
+    return pagesLinks;
+  }
+
+  async *paginator() {
+    const pages = this.#makePaginationURL();
+
+    for (let i = 1; i < this.pages; i += 1) {
+      yield await this.find(pages[i]);
+    }
   }
 
   #makeURL(query) {
