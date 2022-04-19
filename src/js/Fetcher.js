@@ -36,7 +36,9 @@ export default class Fetcher {
 
   async find(userQuery) {
     try {
-      return await axios.get(this.#makeURL(userQuery));
+      const url = /^https/gi.test(userQuery) ? userQuery : this.#makeURL(userQuery);
+
+      return await axios.get(url);
     } catch (error) {
       console.log(error.stack);
     }
@@ -50,6 +52,12 @@ export default class Fetcher {
     }
 
     return pages;
+  }
+
+  nextPage(numberOfFoundImages) {
+    const pages = this.pagination(numberOfFoundImages);
+
+    this.find();
   }
 
   #makeURL(query) {

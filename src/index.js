@@ -51,40 +51,40 @@ async function onFormSubmitFetchAndRenderImages(e) {
   //======================== pagination =========================//
   const pages = pixabay.pagination(await rawImagesData.data.totalHits);
 
-  requestPoint(pages);
+  console.log(pages);
 }
-function getPosition() {
-  const parent = refs.gallery.getBoundingClientRect();
-  const firstChild = refs.gallery.firstElementChild.getBoundingClientRect();
-  const lastChild = refs.gallery.lastElementChild.getBoundingClientRect();
+// function getPosition() {
+//   const parent = refs.gallery.getBoundingClientRect();
+//   const firstChild = refs.gallery.firstElementChild.getBoundingClientRect();
+//   const lastChild = refs.gallery.lastElementChild.getBoundingClientRect();
 
-  return { parent, firstChild, lastChild };
-}
+//   return { parent, firstChild, lastChild };
+// }
 
-async function requestPoint(paginationList) {
-  const intervalID = setInterval(() => {
-    const { parent, firstChild } = getPosition();
-    const cardHeight = firstChild.height;
-    const cardPosY = firstChild.y;
-    const paretHeight = parent.height;
-    const isTimeToFetch = Math.abs(cardPosY) >= paretHeight - cardHeight * 4;
+// async function requestPoint(paginationList) {
+//   const intervalID = setInterval(() => {
+//     const { parent, firstChild } = getPosition();
+//     const cardHeight = firstChild.height;
+//     const cardPosY = firstChild.y;
+//     const paretHeight = parent.height;
+//     const isTimeToFetch = Math.abs(cardPosY) >= paretHeight - cardHeight * 4;
 
-    let _pageNumber = 1;
+//     let _pageNumber = 1;
 
-    if (isTimeToFetch) {
-      axios.get(paginationList[_pageNumber]).then(response => {
-        const parsedImagesData = response.data.hits;
+//     if (isTimeToFetch) {
+//       axios.get(paginationList[_pageNumber]).then(response => {
+//         const parsedImagesData = response.data.hits;
 
-        console.log(parsedImagesData);
-        const readyForRenderImagesData = Promise.all(parsedImagesData.map(extractImageData));
-        console.log(readyForRenderImagesData);
-        renderImages(readyForRenderImagesData);
+//         console.log(parsedImagesData);
+//         const readyForRenderImagesData = Promise.all(parsedImagesData.map(extractImageData));
+//         console.log(readyForRenderImagesData);
+//         renderImages(readyForRenderImagesData);
 
-        _pageNumber += 1;
-      });
-    }
-  }, 1000);
-}
+//         _pageNumber += 1;
+//       });
+//     }
+//   }, 1000);
+// }
 
 async function extractImageData(image) {
   const { webformatURL, largeImageURL, views, downloads, likes, tags, comments } = image;
