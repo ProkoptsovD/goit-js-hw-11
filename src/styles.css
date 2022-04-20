@@ -18,21 +18,26 @@ img {
     max-width: 100%;
 }
 
-body {
-    margin: 0;
-
-    font-family: "Courier New", monospace;
-
-        background: #292826;
+html {
+    height: 100%;
+    overflow: auto;
+    scroll-behavior: smooth;
 }
 
+body {
+    margin: 0;
+    font-family: "Courier New", monospace;
+
+    background: #292826;
+}
+/* ===================== search-bar styles =========================== */
+
 .wrapper {
-    display: flex;
-    justify-content: center;
     height: 100%;
-    min-width: 400px;
+    width: 400px;
 
     padding: 15px 0;
+    margin-inline: auto;
 }
 
 .image-collection {
@@ -65,6 +70,7 @@ input:focus {
 }
 
 form.search-form {
+    align-items: center;
     display: flex;
     justify-content: center;
 }
@@ -93,6 +99,7 @@ input.search-field {
 
 .button {
     display: inline-block;
+    height: 54px;
     font-weight: 600;
     font-size: 1rem;
     line-height: 1.15;
@@ -116,6 +123,49 @@ input.search-field {
     color: #292826;
     outline: 0;
 }
+
+/* ================= to top button styles ======================= */
+
+#to-top-btn {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f9d342;
+    width: 50px;
+    height: 50px;
+    text-align: center;
+    border-radius: 4px;
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    transition: background-color .3s,
+        opacity .5s, visibility .5s;
+    opacity: 0;
+    visibility: hidden;
+    z-index: 1000;
+}
+
+
+
+#to-top-btn svg {
+    width: 35px;
+    fill: #fff;
+}
+
+#to-top-btn:hover {
+    cursor: pointer;
+    background-color: #666;
+}
+
+#to-top-btn:active {
+    background-color: #888;
+}
+
+#to-top-btn.show {
+    opacity: 1;
+    visibility: visible;
+}
+
 
 /* ============== gallery card styles ===================== */
 .photo-card {

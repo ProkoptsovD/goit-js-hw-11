@@ -1,11 +1,11 @@
 //================== npm pakages ======================//
 import SimpleLightbox from 'simplelightbox';
-import throttle from 'lodash.throttle';
-import axios from 'axios';
 
 //================== refs, fns & classes =====================//
 import Fetcher from './js/Fetcher.js';
 import iScroll from './js/iScroll.js';
+import BackOnTop from './js/BackOnTop.js';
+
 import { refs } from './js/refs';
 import { makeGalleryCardsMarkup } from './js/make-gallery-cards-markup.js';
 import { alertMessage } from './js/alert-messages.js';
@@ -22,11 +22,19 @@ import 'simplelightbox/dist/simple-lightbox.min.css';
 refs.form.addEventListener('submit', onFormSubmitFetchAndRenderImages);
 
 const pixabay = new Fetcher(searchOptions);
+const infiniteScroll = new iScroll(refs.gallery);
+const n = new BackOnTop(refs.toTopBtn);
 
 async function onFormSubmitFetchAndRenderImages(e) {
   e.preventDefault();
 
   const searchQuery = e.target[0].value.toLowerCase().trim();
+
+  if (!searchQuery) {
+    alertMessage('warning');
+
+    return;
+  }
 
   const response = await pixabay.find(searchQuery);
   const data = await parseData(response);
@@ -37,34 +45,41 @@ async function onFormSubmitFetchAndRenderImages(e) {
   }
 
   clearGallery();
+
   renderImages(data);
   renderGalleryStyles();
 
   alertMessage('success', {
     success: `Hooray! We found ${pixabay.pages} images.`,
   });
+
   e.target.reset(); // form reset after submit
 
   //======================== pagination =========================//
-  const a = new iScroll(refs.gallery);
   const page = pixabay.paginator();
-  a.requestPoint();
-  refs.gallery.addEventListener('fetch-time', () => {
-    onCustomEvent(page, a);
-  });
+  infiniteScroll.setStartPosition();
+  infiniteScroll.watchFetchPoint();
+
+  const bindedOnCustomEventLoadMore = onCustomEventLoadMore.bind(this, page, infiniteScroll);
+
+  refs.gallery.addEventListener('load-more', bindedOnCustomEventLoadMore);
 }
 
-async function onCustomEvent(page, a) {
-  const k = (await page.next()).value;
-  if (!k) {
-    console.log(k);
-    a.removeScroll();
-    refs.gallery.removeEventListener('fetch-time', onCustomEvent);
-    console.log('there is no images left');
+async function onCustomEventLoadMore(page, scroll) {
+  const response = (await page.next()).value;
+  const areLastImagesLoaded = !response?.data?.hits.length;
+
+  if (areLastImagesLoaded) {
+    refs.gallery.removeEventListener('load-more', this.bindedOnCustomEventLoadMore);
+    scroll.removeScroll();
+    scroll.reset();
+    pixabay.reset();
+
     return;
   }
-  const b = await parseData(k);
-  renderImages(b);
+
+  const dataImages = await parseData(response);
+  renderImages(dataImages);
 }
 
 async function parseData(rawData) {

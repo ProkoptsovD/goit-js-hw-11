@@ -36,10 +36,6 @@ export default class Fetcher {
 
   async find(userQuery) {
     try {
-      if (!userQuery) {
-        return;
-      }
-
       const url = userQuery.includes(this.#API_CONFIG.baseUrl)
         ? userQuery
         : this.#makeURL(userQuery);
@@ -65,8 +61,8 @@ export default class Fetcher {
   #makePaginationURL() {
     const numberOfPages = Math.ceil(+this.pages / +this.#SEARCH_CONFIG.per_page);
     const pagesLinks = [];
-    for (let i = 1; i <= numberOfPages; i += 1) {
-      pagesLinks.push(this.#url + '$page=' + i);
+    for (let i = 1; i <= +numberOfPages + 1; i += 1) {
+      pagesLinks.push(this.#url + '&page=' + i);
     }
 
     return pagesLinks;
@@ -75,7 +71,7 @@ export default class Fetcher {
   async *paginator() {
     const pages = this.#makePaginationURL();
 
-    for (let i = 1; i < this.pages; i += 1) {
+    for (let i = 1; i <= this.pages; i += 1) {
       yield await this.find(pages[i]);
     }
   }
@@ -94,5 +90,10 @@ export default class Fetcher {
     this.#url = url;
 
     return url;
+  }
+
+  reset() {
+    this.#pages = null;
+    this.#url = null;
   }
 }

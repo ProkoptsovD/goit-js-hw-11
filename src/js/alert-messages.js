@@ -4,6 +4,7 @@ const messages = {
   error: 'Sorry, there are no images matching your search query. Please try again',
   success: 'Searching has started',
   end: "We're sorry, but you've reached the end of search results.",
+  warning: 'Type something to start searching...',
 };
 
 function alertMessage(messageType, message = messages) {
@@ -17,6 +18,8 @@ function alertMessage(messageType, message = messages) {
     case 'end':
       Notify.info(message.end);
       break;
+    case 'warning':
+      Notify.warning(message.warning);
   }
 }
 

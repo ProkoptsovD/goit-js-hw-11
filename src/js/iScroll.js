@@ -1,34 +1,50 @@
-import axios from 'axios';
+import debounce from 'lodash.debounce';
 
 export default class iScroll {
+  #startPosition;
+  #debouncedTrackElementPosition;
+
   constructor(parentDOMElement) {
     this.target = parentDOMElement;
-    this.intervalID = null;
-    this.startPos = null;
+    this.#startPosition = null;
+    this.#debouncedTrackElementPosition = debounce(this.#trackElementPosition, 100);
   }
 
-  getPosition() {
+  #getPosition = () => {
     const parent = this.target.getBoundingClientRect();
     const firstChild = this.target.firstElementChild.getBoundingClientRect();
     const lastChild = this.target.lastElementChild.getBoundingClientRect();
 
     return { parent, firstChild, lastChild };
-  }
+  };
 
-  requestPoint() {
-    const { lastChild } = this.getPosition();
-    this.startPos = lastChild.y;
-    this.intervalID = setInterval(() => {
-      const { parent, lastChild } = this.getPosition();
+  setStartPosition = () => {
+    const { lastChild } = this.#getPosition();
+    this.#startPosition = lastChild.y;
+  };
 
-      if (lastChild.y < this.startPos / 4) {
-        const r = new CustomEvent('fetch-time', { bubbles: true });
-        this.target.lastChild.dispatchEvent(r);
-      }
-    }, 2000);
-  }
+  #trackElementPosition = () => {
+    const { lastChild } = this.#getPosition();
 
-  removeScroll() {
-    clearInterval(this.intervalID);
+    if (lastChild.y < this.#startPosition / 4) {
+      this.#throwEvent();
+    }
+  };
+
+  #throwEvent = () => {
+    const loadMore = new CustomEvent('load-more', { bubbles: true });
+    this.target.lastChild.dispatchEvent(loadMore);
+  };
+
+  watchFetchPoint = () => {
+    window.addEventListener('scroll', this.#debouncedTrackElementPosition);
+  };
+
+  removeScroll = () => {
+    window.removeEventListener('scroll', this.#debouncedTrackElementPosition);
+  };
+
+  reset() {
+    this.#startPosition = null;
   }
 }
