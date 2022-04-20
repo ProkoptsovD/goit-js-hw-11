@@ -41,15 +41,30 @@ async function onFormSubmitFetchAndRenderImages(e) {
   renderGalleryStyles();
 
   alertMessage('success', {
-    success: `Hooray! We found  images.`,
+    success: `Hooray! We found ${pixabay.pages} images.`,
   });
   e.target.reset(); // form reset after submit
 
   //======================== pagination =========================//
-  // const page = pixabay.paginator();
-  // const a = await page.next();
-  // const b = await a.value.data.hits;
-  // console.log(b);
+  const a = new iScroll(refs.gallery);
+  const page = pixabay.paginator();
+  a.requestPoint();
+  refs.gallery.addEventListener('fetch-time', () => {
+    onCustomEvent(page, a);
+  });
+}
+
+async function onCustomEvent(page, a) {
+  const k = (await page.next()).value;
+  if (!k) {
+    console.log(k);
+    a.removeScroll();
+    refs.gallery.removeEventListener('fetch-time', onCustomEvent);
+    console.log('there is no images left');
+    return;
+  }
+  const b = await parseData(k);
+  renderImages(b);
 }
 
 async function parseData(rawData) {

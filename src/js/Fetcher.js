@@ -36,7 +36,13 @@ export default class Fetcher {
 
   async find(userQuery) {
     try {
-      const url = /^https/gi.test(userQuery) ? userQuery : this.#makeURL(userQuery);
+      if (!userQuery) {
+        return;
+      }
+
+      const url = userQuery.includes(this.#API_CONFIG.baseUrl)
+        ? userQuery
+        : this.#makeURL(userQuery);
 
       const rawData = await axios.get(url);
       const pagesQuantaty = await rawData.data.totalHits;

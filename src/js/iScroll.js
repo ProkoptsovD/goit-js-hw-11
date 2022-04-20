@@ -4,6 +4,7 @@ export default class iScroll {
   constructor(parentDOMElement) {
     this.target = parentDOMElement;
     this.intervalID = null;
+    this.startPos = null;
   }
 
   getPosition() {
@@ -14,22 +15,17 @@ export default class iScroll {
     return { parent, firstChild, lastChild };
   }
 
-  requestPoint(paginationList) {
+  requestPoint() {
+    const { lastChild } = this.getPosition();
+    this.startPos = lastChild.y;
     this.intervalID = setInterval(() => {
-      const { parent, firstChild } = this.getPosition();
-      const cardHeight = firstChild.height;
-      const cardPosY = firstChild.y;
-      const paretHeight = parent.height;
-      const isTimeToFetch = Math.abs(cardPosY) >= paretHeight - cardHeight * 4;
-    }, 400);
-  }
+      const { parent, lastChild } = this.getPosition();
 
-  async nextPage(url) {
-    try {
-      return await axios.get(url);
-    } catch (error) {
-      console.log(error.stack);
-    }
+      if (lastChild.y < this.startPos / 4) {
+        const r = new CustomEvent('fetch-time', { bubbles: true });
+        this.target.lastChild.dispatchEvent(r);
+      }
+    }, 2000);
   }
 
   removeScroll() {
