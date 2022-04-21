@@ -3,4 +3,5 @@ export const refs = {
   submitBtn: document.querySelector('.search-submit'),
   gallery: document.querySelector('.gallery'),
   toTopBtn: document.querySelector('#to-top-btn'),
+  sortBy: document.querySelector('#sortby-form'),
 };

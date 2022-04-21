@@ -22,6 +22,21 @@
             <input class="search-field" type="text" name="searchQuery" autocomplete="off" placeholder="Search images..." />
             <button class="search-submit button" type="submit">🔎︎</button>
         </form>
+        <form id="sortby-form">
+            <p> You may sort images by:</p>
+            <div class="sortby-form__wrapper">
+                <input type="radio" id="default" name="sortby" value="default" checked>
+                <label for="default">default</label>
+                <input type="radio" id="likes" name="sortby" value="likes">
+                <label for="likes">likes</label>
+                <input type="radio" id="views" name="sortby" value="views">
+                <label for="views">views</label>
+                <input type="radio" id="comments" name="sortby" value="comments">
+                <label for="comments">comments</label>
+                <input type="radio" id="downloads" name="sortby" value="downloads">
+                <label for="downloads">downloads</label>
+            </div>
+        </form>
     </div>
     <ul class="container gallery">
         <!-- Карточки изображений -->

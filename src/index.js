@@ -9,6 +9,7 @@ import BackOnTop from './js/BackOnTop.js';
 import { refs } from './js/refs';
 import { makeGalleryCardsMarkup } from './js/make-gallery-cards-markup.js';
 import { alertMessage } from './js/alert-messages.js';
+import { sortBy } from './js/sort-by.js';
 
 //==================== configs ========================//
 import { simpleOptions } from './js/simplelightbox-options';
@@ -26,16 +27,6 @@ const infiniteScroll = new iScroll(refs.gallery);
 const n = new BackOnTop(refs.toTopBtn);
 
 pixabay.init();
-// const x = pixabay.gen(7);
-// console.log(x.next());
-// console.log(x.next());
-// console.log(x.next());
-
-// x.reset();
-
-// console.log(x.next());
-// console.log(x.next());
-// console.log(x.next());
 
 async function onFormSubmitFetchAndRenderImages(e) {
   e.preventDefault();
@@ -66,6 +57,7 @@ async function onFormSubmitFetchAndRenderImages(e) {
   });
 
   e.target.reset(); // form reset after submit
+  showSortByBtns(); // shows sorting buttons
 
   //======================== pagination =========================//
   infiniteScroll.setStartPosition();
@@ -142,4 +134,8 @@ function renderGalleryStyles() {
 
 function clearGallery() {
   refs.gallery.innerHTML = '';
+}
+
+function showSortByBtns() {
+  refs.sortBy.classList.add('show');
 }
