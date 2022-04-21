@@ -3,8 +3,7 @@ import axios from 'axios';
 export default class Fetcher {
   #API_CONFIG;
   #SEARCH_CONFIG;
-  #url;
-  #pages;
+  #pagesLeft;
 
   constructor(searchConfig = {}, apiConfig = {}) {
     this.#API_CONFIG = {
@@ -21,10 +20,19 @@ export default class Fetcher {
       safesearch: true,
     };
 
-    this.#url = null;
-    this.#pages = null;
+    this.url = null;
+    this.#pagesLeft = null;
+    this.totalHits = null;
+    this.counter = 1;
+
+    this.gen = null;
+
     this.#setApiConfig(apiConfig);
     this.setSearchConfig(searchConfig);
+  }
+
+  init() {
+    this.gen = this.resetableGenerator(this.paginator);
   }
 
   #setApiConfig(options) {
@@ -36,13 +44,9 @@ export default class Fetcher {
 
   async find(userQuery) {
     try {
-      const url = userQuery.includes(this.#API_CONFIG.baseUrl)
-        ? userQuery
-        : this.#makeURL(userQuery);
+      const rawData = await axios.get(this.#makeURL(userQuery));
 
-      const rawData = await axios.get(url);
-      const pagesQuantaty = await rawData.data.totalHits;
-      this.pages = pagesQuantaty;
+      await this.#setPageInfo(rawData);
 
       return rawData;
     } catch (error) {
@@ -50,30 +54,31 @@ export default class Fetcher {
     }
   }
 
-  get pages() {
-    return this.#pages;
+  async #setPageInfo(response) {
+    const pagesQuantaty = await response.data.totalHits;
+    this.totalHits = await pagesQuantaty;
+    this.#pagesLeft = Math.ceil((await pagesQuantaty) / this.#SEARCH_CONFIG.per_page);
   }
 
-  set pages(newAmount) {
-    this.#pages = newAmount;
+  get pagesLeft() {
+    return this.#pagesLeft;
   }
 
-  #makePaginationURL() {
-    const numberOfPages = Math.ceil(+this.pages / +this.#SEARCH_CONFIG.per_page);
-    const pagesLinks = [];
-    for (let i = 1; i <= +numberOfPages + 1; i += 1) {
-      pagesLinks.push(this.#url + '&page=' + i);
+  set pagesLeft(newAmount) {
+    this.#pagesLeft = newAmount;
+  }
+
+  *paginator(...args) {
+    const currrentPageUrl = args[0];
+    const numberOfPages = args[1];
+
+    for (let i = 2; i <= numberOfPages; i += 1) {
+      yield `${currrentPageUrl}&page=${i}`;
     }
-
-    return pagesLinks;
   }
 
-  async *paginator() {
-    const pages = this.#makePaginationURL();
-
-    for (let i = 1; i <= this.pages; i += 1) {
-      yield await this.find(pages[i]);
-    }
+  async loadMore(url) {
+    return await axios.get(url);
   }
 
   #makeURL(query) {
@@ -87,13 +92,38 @@ export default class Fetcher {
       sanitizedQuery ? '&q=' + sanitizedQuery : ''
     }${searchParams}`;
 
-    this.#url = url;
+    this.url = url;
 
     return url;
   }
 
   reset() {
-    this.#pages = null;
-    this.#url = null;
+    this.#pagesLeft = null;
+    this.url = null;
+  }
+
+  resetableGenerator(f) {
+    const proxy = new Proxy(f, {
+      apply(target, thisArg, argumentsList) {
+        const base = target.call(thisArg, ...argumentsList),
+          basenext = base.next;
+        let generator = base;
+        base.next = function next() {
+          return generator === base
+            ? basenext.call(base) // generator is the original one
+            : generator.next(); // generator is the reset one
+        };
+        // define reset to use the original arguments to create
+        // a new generator and assign it to the generator variable
+        Object.defineProperty(generator, 'reset', {
+          enumerable: false,
+          value: () => (generator = target.call(thisArg, ...argumentsList)),
+        });
+        // return the generator, which now has a reset method
+        return generator;
+      },
+    });
+    // return proxy which will create a generator with a reset method
+    return proxy;
   }
 }

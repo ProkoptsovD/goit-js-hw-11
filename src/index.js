@@ -25,6 +25,18 @@ const pixabay = new Fetcher(searchOptions);
 const infiniteScroll = new iScroll(refs.gallery);
 const n = new BackOnTop(refs.toTopBtn);
 
+pixabay.init();
+// const x = pixabay.gen(7);
+// console.log(x.next());
+// console.log(x.next());
+// console.log(x.next());
+
+// x.reset();
+
+// console.log(x.next());
+// console.log(x.next());
+// console.log(x.next());
+
 async function onFormSubmitFetchAndRenderImages(e) {
   e.preventDefault();
 
@@ -50,27 +62,34 @@ async function onFormSubmitFetchAndRenderImages(e) {
   renderGalleryStyles();
 
   alertMessage('success', {
-    success: `Hooray! We found ${pixabay.pages} images.`,
+    success: `Hooray! We found ${pixabay.totalHits} images.`,
   });
 
   e.target.reset(); // form reset after submit
 
   //======================== pagination =========================//
-  const page = pixabay.paginator();
   infiniteScroll.setStartPosition();
   infiniteScroll.watchFetchPoint();
+  const pagination = pixabay.gen(pixabay.url, pixabay.pagesLeft);
+  const onCustomEventLoadMoreBinded = onCustomEventLoadMore.bind(this, pagination);
 
-  const bindedOnCustomEventLoadMore = onCustomEventLoadMore.bind(this, page, infiniteScroll);
-
-  refs.gallery.addEventListener('load-more', bindedOnCustomEventLoadMore);
+  refs.gallery.addEventListener('load-more', onCustomEventLoadMoreBinded);
+  refs.submitBtn.addEventListener('click', () => {
+    console.log('pagination is reseted');
+    pagination.reset();
+    refs.gallery.removeEventListener('load-more', onCustomEventLoadMoreBinded);
+  });
 }
 
-async function onCustomEventLoadMore(page, scroll) {
-  const response = (await page.next()).value;
+async function onCustomEventLoadMore(pagination) {
+  let url = pagination.next().value;
+  console.log(url);
+  let response = await pixabay.loadMore(url);
+
   const areLastImagesLoaded = !response?.data?.hits.length;
 
   if (areLastImagesLoaded) {
-    refs.gallery.removeEventListener('load-more', this.bindedOnCustomEventLoadMore);
+    refs.gallery.removeEventListener('load-more', onCustomEventLoadMore);
     scroll.removeScroll();
     scroll.reset();
     pixabay.reset();
