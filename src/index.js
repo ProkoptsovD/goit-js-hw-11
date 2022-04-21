@@ -31,7 +31,7 @@ pixabay.init();
 async function onFormSubmitFetchAndRenderImages(e) {
   e.preventDefault();
 
-  const searchQuery = e.target[0].value.toLowerCase().trim();
+  const searchQuery = e.target.elements.searchQuery.value.toLowerCase().trim();
 
   if (!searchQuery) {
     alertMessage('warning');
@@ -70,6 +70,20 @@ async function onFormSubmitFetchAndRenderImages(e) {
     console.log('pagination is reseted');
     pagination.reset();
     refs.gallery.removeEventListener('load-more', onCustomEventLoadMoreBinded);
+  });
+}
+
+function wathcSortByBtnClicked() {
+  refs.sortBy.addEventListener('click', e => {
+    const INPUT_ELEMENT = 'INPUT';
+    const LABEL_ELEMENT = 'LABEL';
+
+    const isInputBtnClicked = e.target.nodeName === INPUT_ELEMENT;
+    const isLabelFieldClicked = e.target.nodeName === LABEL_ELEMENT;
+
+    const sortCriterion = isInputBtnClicked ? e.target.value : e.target.textContent;
+
+    console.log(sortCriterion);
   });
 }
 
