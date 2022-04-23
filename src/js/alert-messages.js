@@ -3,11 +3,11 @@ import { Notify } from 'notiflix';
 const messages = {
   error: 'Sorry, there are no images matching your search query. Please try again',
   success: 'Searching has started',
-  end: 'No more images to download are left',
+  end: "We're sorry, but you've reached the end of search results.",
   warning: 'Type something to start searching...',
 };
 
-function alertMessage(messageType, message = messages, amountOfImagesFound = '') {
+function alertNotification(messageType, message = messages, amountOfImagesFound = '') {
   switch (messageType) {
     case 'error':
       Notify.failure(message.error);
@@ -23,4 +23,4 @@ function alertMessage(messageType, message = messages, amountOfImagesFound = '')
   }
 }
 
-export { alertMessage };
+export { alertNotification };

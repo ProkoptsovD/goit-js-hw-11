@@ -18,6 +18,7 @@ export default class Fetcher {
       orientation: 'horizontal',
       image_type: 'photo',
       safesearch: true,
+      page: '1',
     };
 
     this.url = null;
@@ -25,14 +26,17 @@ export default class Fetcher {
     this.totalHits = null;
     this.counter = 1;
 
-    this.gen = null;
+    this.urlGen = null;
 
     this.#setApiConfig(apiConfig);
     this.setSearchConfig(searchConfig);
   }
 
-  init() {
-    this.gen = this.resetableGenerator(this.paginator);
+  initPagination() {
+    this.urlGen = this.resetableGenerator(this.paginator);
+  }
+  startPagination() {
+    this.pagination = this.urlGen(this.url, this.#pagesLeft);
   }
 
   #setApiConfig(options) {
@@ -69,11 +73,11 @@ export default class Fetcher {
   }
 
   *paginator(...args) {
-    const currrentPageUrl = args[0];
+    const currrentPageUrl = args[0].slice(0, -1);
     const numberOfPages = args[1];
 
     for (let i = 2; i <= numberOfPages; i += 1) {
-      yield `${currrentPageUrl}&page=${i}`;
+      yield `${currrentPageUrl}${i}`;
     }
   }
 
