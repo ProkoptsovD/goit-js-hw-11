@@ -9,7 +9,6 @@ import BackOnTop from './js/BackOnTop.js';
 import { refs } from './js/refs';
 import { makeGalleryCardsMarkup } from './js/make-gallery-cards-markup.js';
 import { alertMessage } from './js/alert-messages.js';
-import { sortBy } from './js/sort-by.js';
 
 //==================== configs ========================//
 import { simpleOptions } from './js/simplelightbox-options';
@@ -48,62 +47,50 @@ async function onFormSubmitFetchAndRenderImages(e) {
   }
 
   clearGallery();
-
   renderImages(data);
   renderGalleryStyles();
 
-  alertMessage('success', {
-    success: `Hooray! We found ${pixabay.totalHits} images.`,
-  });
+  alertMessage('success', null, pixabay.totalHits);
 
-  e.target.reset(); // form reset after submit
-  showSortByBtns(); // shows sorting buttons
+  this.reset(); // form reset after submit
 
   //======================== pagination =========================//
   infiniteScroll.setStartPosition();
   infiniteScroll.watchFetchPoint();
   const pagination = pixabay.gen(pixabay.url, pixabay.pagesLeft);
-  const onCustomEventLoadMoreBinded = onCustomEventLoadMore.bind(this, pagination);
+  const onCustomEventLoadMoreBinded = onCustomEventLoadMore.bind(this, pagination, infiniteScroll);
 
   refs.gallery.addEventListener('load-more', onCustomEventLoadMoreBinded);
-  refs.submitBtn.addEventListener('click', () => {
-    console.log('pagination is reseted');
-    pagination.reset();
-    refs.gallery.removeEventListener('load-more', onCustomEventLoadMoreBinded);
-  });
+  refs.form.addEventListener(
+    'submit',
+    () => {
+      refs.gallery.removeEventListener('load-more', onCustomEventLoadMoreBinded);
+      infiniteScroll.removeScroll();
+      infiniteScroll.reset();
+      pagination.reset();
+    },
+    { once: true },
+  );
 }
 
-function wathcSortByBtnClicked() {
-  refs.sortBy.addEventListener('click', e => {
-    const INPUT_ELEMENT = 'INPUT';
-    const LABEL_ELEMENT = 'LABEL';
+async function onCustomEventLoadMore(pagination, infiniteScroll) {
+  const nextPageUrl = pagination.next().value;
+  const noImagesAreLeft = !(await nextPageUrl);
 
-    const isInputBtnClicked = e.target.nodeName === INPUT_ELEMENT;
-    const isLabelFieldClicked = e.target.nodeName === LABEL_ELEMENT;
-
-    const sortCriterion = isInputBtnClicked ? e.target.value : e.target.textContent;
-
-    console.log(sortCriterion);
-  });
-}
-
-async function onCustomEventLoadMore(pagination) {
-  let url = pagination.next().value;
-  console.log(url);
-  let response = await pixabay.loadMore(url);
-
-  const areLastImagesLoaded = !response?.data?.hits.length;
-
-  if (areLastImagesLoaded) {
+  if (noImagesAreLeft) {
     refs.gallery.removeEventListener('load-more', onCustomEventLoadMore);
-    scroll.removeScroll();
-    scroll.reset();
+    infiniteScroll.removeScroll();
+    infiniteScroll.reset();
     pixabay.reset();
+
+    alertMessage('end');
 
     return;
   }
 
+  const response = await pixabay.loadMore(nextPageUrl);
   const dataImages = await parseData(response);
+
   renderImages(dataImages);
 }
 
@@ -148,8 +135,4 @@ function renderGalleryStyles() {
 
 function clearGallery() {
   refs.gallery.innerHTML = '';
-}
-
-function showSortByBtns() {
-  refs.sortBy.classList.add('show');
 }

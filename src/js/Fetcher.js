@@ -78,7 +78,11 @@ export default class Fetcher {
   }
 
   async loadMore(url) {
-    return await axios.get(url);
+    try {
+      return await axios.get(url);
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   #makeURL(query) {
@@ -105,8 +109,8 @@ export default class Fetcher {
   resetableGenerator(f) {
     const proxy = new Proxy(f, {
       apply(target, thisArg, argumentsList) {
-        const base = target.call(thisArg, ...argumentsList),
-          basenext = base.next;
+        const base = target.call(thisArg, ...argumentsList);
+        const basenext = base.next;
         let generator = base;
         base.next = function next() {
           return generator === base
