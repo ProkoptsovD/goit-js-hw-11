@@ -12,17 +12,20 @@ export default class BackOnTop {
   }
 
   handleScroll = () => {
+    const SCROLL_VALUE_TO_SHOW_BTN = 0.2;
     const scrollTotal = this.rootElement.scrollHeight - this.rootElement.clientHeight;
-    if (this.rootElement.scrollTop / scrollTotal > 0.2) {
+
+    if (this.rootElement.scrollTop / scrollTotal > SCROLL_VALUE_TO_SHOW_BTN) {
       this.show();
     } else {
       this.hide();
     }
   };
   scrollToTop = () => {
-    console.log('here');
+    const SCROLL_PIXELS = 0;
+
     document.documentElement.scrollTo({
-      top: 0,
+      top: SCROLL_PIXELS,
       behavior: 'smooth',
     });
   };
@@ -30,6 +33,6 @@ export default class BackOnTop {
     this.toTopBtn.classList.add('show');
   };
   hide = () => {
-    this.toTopBtn.classList.remove('show', 'show');
+    this.toTopBtn.classList.remove('show');
   };
 }
