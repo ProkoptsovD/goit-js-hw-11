@@ -16,7 +16,7 @@ function alertNotification(messageType, message = messages, amountOfImagesFound 
       Notify.success(message?.success || `Hooray! We found ${amountOfImagesFound} images.`);
       break;
     case 'end':
-      Notify.info(message.end, { timeout: 5000 });
+      Notify.info(message.end, { timeout: 10000 });
       break;
     case 'warning':
       Notify.warning(message.warning);
