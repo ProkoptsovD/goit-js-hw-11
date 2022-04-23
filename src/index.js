@@ -54,14 +54,14 @@ async function onFormSubmitFetchAndRenderImages(e) {
   //======================== pagination block =========================//
 
   infiniteScroll.setStartPosition(); // cathes gallery's last element start position
-  infiniteScroll.watchFetchPoint(); // calculates if the last element has reached to the gallery bottom and throws custom Event
-  pixabay.startPagination(); // launches the generator which on every Event gives next pages for the current query
+  infiniteScroll.watchFetchPoint(); // calculates if the last element has reached to the gallery's bottom and throws custom Event
+  pixabay.startPagination(); // launches the generator giving next pages url for the current query on every Event
 
   refs.gallery.addEventListener('load-more', onCustomEventLoadMore);
 
   // resets pagination generator, if not all images found were loaded.
-  // For example were found 7 pages of images, but user loaded only 3 of 7
-  // so we need to reset generator and all set values both from iScroll and Fetcher(pixabay instance)
+  // For example 7 pages of images were found, but user loaded only 3 of 7
+  // so we need to reset generator and all set values both from iScroll and pixabay(Fetcher instance)
   refs.form.addEventListener(
     'submit',
     () => {
